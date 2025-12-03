@@ -1,13 +1,27 @@
 import { Navigate } from "react-router";
+import { useAuthContext } from "../contexts";
+import { AUTH_URL, ADMIN_URL } from "../constant/url";
 
-import { useAuth } from "../hooks/use-auth";
+const AuthRedirect = () => {
+  const { isAuthenticated, isOfficer, isLoading } = useAuthContext();
 
-import { ADMIN_URL, AUTH_URL } from "../constant/url";
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
-export default function AuthRedirect() {
-  const { isLoggedIn } = useAuth();
+  if (!isAuthenticated) {
+    return <Navigate to={AUTH_URL.LOGIN} replace />;
+  }
 
-  if (isLoggedIn) return <Navigate to={ADMIN_URL.DASHBOARD} replace />;
+  if (isOfficer) {
+    return <Navigate to={ADMIN_URL.SUBMISSIONS} replace />;
+  }
 
-  return <Navigate to={AUTH_URL.LOGIN} replace />;
-}
+  return <Navigate to={ADMIN_URL.PROFILE} replace />;
+};
+
+export default AuthRedirect;

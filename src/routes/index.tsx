@@ -1,49 +1,40 @@
-import { createBrowserRouter, redirect } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 
 import Login from "../pages/login";
-import Dashboard from "../pages/dashboard";
+import Profile from "../pages/profile";
+import KycForm from "../pages/kyc";
+import Submissions from "../pages/submissions";
+import Results from "../pages/results";
+import ClientProfile from "../pages/client-profile";
 
 import AuthLayout from "../layouts/auth";
 import AdminLayout from "../layouts/admin";
 
 import { ADMIN_URL, AUTH_URL } from "../constant/url";
 
-import AuthRedirect from "./auth-redirect";
-import { TOKEN } from "../constant/auth";
-
-const requireAuth = () => {
-  const token = localStorage.getItem(TOKEN);
-
-  if (!token) {
-    throw redirect(AUTH_URL.LOGIN);
-  }
-
-  return null;
-};
-
 const Router = createBrowserRouter([
   {
     path: "/",
-    Component: AuthRedirect,
+    element: <Navigate to={AUTH_URL.LOGIN} replace />,
   },
   {
     path: AUTH_URL.BASE,
     Component: AuthLayout,
     children: [
-      { index: true, Component: Login },
-      { path: AUTH_URL.LOGIN, index: true, Component: Login },
+      { index: true, element: <Navigate to={AUTH_URL.LOGIN} replace /> },
+      { path: AUTH_URL.LOGIN, Component: Login },
     ],
   },
   {
     path: ADMIN_URL.BASE,
     Component: AdminLayout,
-    middleware: [requireAuth],
     children: [
-      { index: true, Component: Dashboard },
-      {
-        path: ADMIN_URL.DASHBOARD,
-        Component: Dashboard,
-      },
+      { index: true, element: <Navigate to={ADMIN_URL.PROFILE} replace /> },
+      { path: ADMIN_URL.PROFILE, Component: Profile },
+      { path: ADMIN_URL.KYC, Component: KycForm },
+      { path: ADMIN_URL.SUBMISSIONS, Component: Submissions },
+      { path: ADMIN_URL.RESULTS, Component: Results },
+      { path: ADMIN_URL.CLIENT_PROFILE, Component: ClientProfile },
     ],
   },
 ]);

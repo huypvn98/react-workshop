@@ -1,11 +1,23 @@
+export enum UserRole {
+  USER = "user",
+  OFFICER = "officer",
+}
+
 export type User = {
   accessToken: string;
+  refreshToken: string;
+  id: number;
+  username: string;
   email: string;
   firstName: string;
-  gender: string;
-  id: number;
-  image: string;
   lastName: string;
-  refreshToken: string;
-  username: string;
+  gender: string;
+  image: string;
+  role: UserRole;
+};
+
+export type AuthState = {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
 };

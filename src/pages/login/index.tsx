@@ -6,9 +6,9 @@ import CheckBox from "../../components/check-box";
 import Input from "../../components/input";
 
 import { useLoginMutation } from "../../hooks/use-login-mutation";
-
+import { useAuthContext } from "../../contexts";
+import { usernameValidation, passwordValidation } from "../../utils/validation";
 import { ADMIN_URL } from "../../constant/url";
-import { TOKEN } from "../../constant/auth";
 
 type LoginForm = {
   username: string;
@@ -16,8 +16,11 @@ type LoginForm = {
   remember: boolean;
 };
 
+const OFFICER_USERNAMES = ["admin", "oliviaw", "liamg"];
+
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuthContext();
 
   const {
     handleSubmit,
@@ -26,18 +29,27 @@ const Login = () => {
     watch,
   } = useForm<LoginForm>();
 
-  const { mutateAsync: login, isPending, error, reset } = useLoginMutation();
+  const { mutateAsync: loginApi, isPending, error, reset } = useLoginMutation();
 
   const onSubmit = async (data: LoginForm) => {
     try {
-      const response = await login({
+      const response = await loginApi({
         username: data.username,
         password: data.password,
       });
 
-      const { accessToken } = response.data;
-      localStorage.setItem(TOKEN, accessToken);
-      return navigate(ADMIN_URL.DASHBOARD);
+      const userData = response.data;
+      login(userData);
+
+      const isOfficer = OFFICER_USERNAMES.includes(
+        data.username.toLowerCase()
+      );
+      
+      if (isOfficer) {
+        navigate(ADMIN_URL.SUBMISSIONS);
+      } else {
+        navigate(ADMIN_URL.PROFILE);
+      }
     } catch (err) {
       console.error("Login failed:", err);
     }
@@ -52,24 +64,20 @@ const Login = () => {
       <form className="mt-6" onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="mb-4">
           <Input
-            label="User name"
+            label="Username"
             required
-            placeholder="Enter your username"
+            placeholder="Enter your username (8-10 characters)"
             error={errors.username?.message}
-            {...register("username", {
-              required: "Username is required",
-            })}
+            {...register("username", usernameValidation)}
           />
         </div>
         <div className="mb-4">
           <Input
             label="Password"
             type="password"
-            placeholder="Enter your password"
+            placeholder="Enter your password (12-16 characters)"
             error={errors.password?.message}
-            {...register("password", {
-              required: "Password is required",
-            })}
+            {...register("password", passwordValidation)}
           />
         </div>
         <div className="my-4">
@@ -88,6 +96,11 @@ const Login = () => {
           Sign up
         </a>
       </p>
+      <div className="mt-4 p-3 bg-gray-50 rounded-md text-xs text-gray-500">
+        <p className="font-medium mb-1">Test Accounts (DummyJSON):</p>
+        <p>User: emilys / emilyspass</p>
+        <p>Officer: oliviaw / oliviawpass</p>
+      </div>
     </>
   );
 };
